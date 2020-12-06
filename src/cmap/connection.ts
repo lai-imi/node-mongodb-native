@@ -27,7 +27,6 @@ import type { Server } from '../sdam/server';
 import type { MongoCredentials } from './auth/mongo_credentials';
 import type { CommandOptions } from './wire_protocol/command';
 import type { GetMoreOptions } from './wire_protocol/get_more';
-import type { InsertOptions, UpdateOptions, RemoveOptions } from './wire_protocol/index';
 import type { Stream } from './connect';
 import type { LoggerOptions } from '../logger';
 import type { QueryOptions } from './wire_protocol/query';
@@ -277,21 +276,6 @@ export class Connection extends EventEmitter {
   /** @internal */
   killCursors(ns: string, cursorIds: Long[], options: CommandOptions, callback: Callback): void {
     wp.killCursors(makeServerTrampoline(this), ns, cursorIds, options, callback);
-  }
-
-  /** @internal */
-  insert(ns: string, ops: Document[], options: InsertOptions, callback: Callback): void {
-    wp.insert(makeServerTrampoline(this), ns, ops, options, callback);
-  }
-
-  /** @internal */
-  update(ns: string, ops: Document[], options: UpdateOptions, callback: Callback): void {
-    wp.update(makeServerTrampoline(this), ns, ops, options, callback);
-  }
-
-  /** @internal */
-  remove(ns: string, ops: Document[], options: RemoveOptions, callback: Callback): void {
-    wp.remove(makeServerTrampoline(this), ns, ops, options, callback);
   }
 }
 
