@@ -85,33 +85,35 @@ describe('Connection', function () {
           test: Math.floor(Math.random() * idx)
         }));
 
-        conn.command(ns, { insert: 'test', documents }, (err, res) => {
-          expect(err).to.not.exist;
-          expect(res).nested.property('n').to.equal(documents.length);
-
-          let totalDocumentsRead = 0;
-          conn.command(ns, { find: 'test', batchSize: 100 }, (err, result) => {
+        conn.command(ns, { drop: 'test' }, () => {
+          conn.command(ns, { insert: 'test', documents }, (err, res) => {
             expect(err).to.not.exist;
-            expect(result).nested.property('cursor').to.exist;
-            const cursor = result.cursor;
-            totalDocumentsRead += cursor.firstBatch.length;
+            expect(res).nested.property('n').to.equal(documents.length);
 
-            conn.command(
-              ns,
-              { getMore: cursor.id, collection: 'test', batchSize: 100 },
-              { exhaustAllowed: true },
-              (err, result) => {
-                expect(err).to.not.exist;
-                expect(result).nested.property('cursor').to.exist;
-                const cursor = result.cursor;
-                totalDocumentsRead += cursor.nextBatch.length;
+            let totalDocumentsRead = 0;
+            conn.command(ns, { find: 'test', batchSize: 100 }, (err, result) => {
+              expect(err).to.not.exist;
+              expect(result).nested.property('cursor').to.exist;
+              const cursor = result.cursor;
+              totalDocumentsRead += cursor.firstBatch.length;
 
-                if (cursor.id === 0 || cursor.id.isZero()) {
-                  expect(totalDocumentsRead).to.equal(documents.length);
-                  done();
+              conn.command(
+                ns,
+                { getMore: cursor.id, collection: 'test', batchSize: 100 },
+                { exhaustAllowed: true },
+                (err, result) => {
+                  expect(err).to.not.exist;
+                  expect(result).nested.property('cursor').to.exist;
+                  const cursor = result.cursor;
+                  totalDocumentsRead += cursor.nextBatch.length;
+
+                  if (cursor.id === 0 || cursor.id.isZero()) {
+                    expect(totalDocumentsRead).to.equal(documents.length);
+                    done();
+                  }
                 }
-              }
-            );
+              );
+            });
           });
         });
       });
